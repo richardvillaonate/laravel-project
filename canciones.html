@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Frases Animadas</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto&family=Lobster&family=Montserrat&family=Pacifico&family=Oswald&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #1a1a1a;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding-top: 60px; /* espacio para el header */
+      box-sizing: border-box;
+      overflow: hidden;
+      transition: background 0.5s ease;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: #222;
+      display: flex;
+      align-items: center;
+      justify-content: space-between; /* uno a la izquierda, otro a la derecha */
+      padding: 0 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+      z-index: 200;
+    }
+
+    .boton-icono {
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      background-color: #333;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      transition: background-color 0.3s ease;
+      position: relative; /* para input absolute dentro */
+    }
+    .boton-icono:hover {
+      background-color: #555;
+    }
+
+    input[type="color"],
+    input[type="file"] {
+      opacity: 0;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      border-radius: 50%;
+    }
+
+    .input-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+    }
+
+    .frase {
+      font-size: 2rem;
+      text-align: center;
+      padding: 2rem;
+      max-width: 80%;
+      min-height: 6rem;
+      z-index: 1;
+    }
+
+    /* Botones de navegación abajo en las esquinas */
+    #btnAnterior  {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 100;
+    }
+    #btnSiguiente {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <!-- Botón color fondo en esquina izquierda -->
+    <div id="btnColor" class="boton-icono input-wrapper" title="Cambiar color de fondo">
+      🎨
+      <input type="color" id="colorFondo" onchange="cambiarFondoColor()">
+    </div>
+
+    <!-- Botón imagen fondo en esquina derecha -->
+    <div id="btnImagen" class="boton-icono input-wrapper" title="Cargar imagen de fondo">
+      🖼️
+      <input type="file" id="imagenFondo" accept="image/*" onchange="cambiarFondoImagen(event)">
+    </div>
+  </header>
+
+  <div id="frase" class="frase animate__animated animate__fadeIn">
+    <strong>En tu altar, oraré</strong>
+  </div>
+
+  <!-- Botones navegación -->
+  <button id="btnAnterior" class="boton-icono" onclick="fraseAnterior()">⬅️</button>
+  <button id="btnSiguiente" class="boton-icono" onclick="siguienteFrase()">➡️</button>
+
+  <script>
+
+    const animaciones = [
+    "animate__fadeIn",
+    "animate__bounceIn",
+    "animate__zoomIn",
+    "animate__slideInUp",
+    "animate__flipInX",
+    "animate__jackInTheBox"
+    ];
+
+    const fuentes = [
+    "'Roboto', sans-serif",
+    "'Lobster', cursive",
+    "'Montserrat', sans-serif",
+    "'Pacifico', cursive",
+    "'Oswald', sans-serif"
+    ];
+
+
+    const frases = [
+      "<strong>En tu altar, oraré</strong>",
+      "<em>Tú eres el escultor, yo soy la arcilla</em>",
+      "<strong>Dios mío, Dios mío</strong>",
+      "<strong>Me estás sacando de lo común</strong>",
+      "<em>Quiero que me acuestes</em>",
+      "<em>Hasta que estemos muertos y enterrados</em>",
+      "<em>Estoy al filo de tu cuchillo</em>",
+      "<em>Emborrachándome con tu viña</em>",
+      "<strong>Los ángeles en las nubes</strong>",
+      "<em>Están celosos de saber que encontramos</em>",
+      "<strong>Algo tan fuera (fuera) de lo común (común)</strong>",
+      "<em>Me tienes besando el suelo (suelo) de tu santuario (santuario)</em>",
+      "<em>Hazme pedazos con tu toque</em>",
+      "<em>Oh, Señor, devuélveme al polvo</em>",
+      "<strong>Los ángeles en las nubes</strong>",
+      "<em>Están celosos de saber que los encontramos</em>",
+      "<strong>Algo tan divino, mejor que el éxtasis</strong>",
+      "<em>Cada vez que estás a mi lado, Dios mío, Dios mío</em>",
+      "<em>El mundo era blanco y negro hasta que vi tu luz</em>",
+      "<em>Pensé que había que morir para encontrar</em>"
+    ];
+
+    let indice = 0;
+    const fraseDiv = document.getElementById("frase");
+
+   function mostrarFrase() {
+    // Elegir animación y fuente aleatorias
+    const animacion = animaciones[Math.floor(Math.random() * animaciones.length)];
+    const fuente = fuentes[Math.floor(Math.random() * fuentes.length)];
+
+    // Remover animaciones anteriores para reiniciar
+    fraseDiv.className = "frase animate__animated"; 
+
+    // Forzar reflow para reiniciar animación
+    void fraseDiv.offsetWidth;
+
+    // Cambiar contenido, animación y fuente
+    fraseDiv.innerHTML = frases[indice];
+    fraseDiv.style.fontFamily = fuente;
+    fraseDiv.classList.add(animacion);
+    }
+
+
+    function siguienteFrase() {
+      indice = (indice + 1) % frases.length;
+      mostrarFrase();
+    }
+
+    function fraseAnterior() {
+      indice = (indice - 1 + frases.length) % frases.length;
+      mostrarFrase();
+    }
+
+    function cambiarFondoColor() {
+      const color = document.getElementById("colorFondo").value;
+      document.body.style.backgroundImage = "";
+      document.body.style.backgroundColor = color;
+    }
+
+    function cambiarFondoImagen(event) {
+      const archivo = event.target.files[0];
+      if (archivo) {
+        const lector = new FileReader();
+        lector.onload = function(e) {
+          document.body.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        lector.readAsDataURL(archivo);
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") siguienteFrase();
+      else if (e.key === "ArrowLeft") fraseAnterior();
+    });
+  </script>
+
+</body>
+</html>
